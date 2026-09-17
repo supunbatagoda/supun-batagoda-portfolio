@@ -1,0 +1,58 @@
+name: Build and deploy portfolio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/portfolio.yml"
+  workflow_dispatch:
+
+# Prevent two pushes from deploying over one another. A newer queued run replaces
+# an older queued run, while an active deployment is allowed to finish.
+concurrency:
+  group: portfolio-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    name: Build frontend and deploy to VPS
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        run: npm run build
+
+      # The web-server root should be /var/www/meeshlabs/supunbatagoda.
+      # `rm: true` avoids leaving stale hashed assets after a deployment.
+      - name: Deploy built site to VPS
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: frontend/dist/*
+          target: /var/www/meeshlabs/supunbatagoda
+          strip_components: 2
+          rm: true
