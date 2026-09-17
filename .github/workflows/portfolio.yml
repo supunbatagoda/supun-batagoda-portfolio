@@ -5,11 +5,11 @@ on:
     branches: [main]
     paths:
       - "frontend/**"
+      - "backend/**"
+      - "ecosystem.config.cjs"
       - ".github/workflows/portfolio.yml"
   workflow_dispatch:
 
-# Prevent two pushes from deploying over one another. A newer queued run replaces
-# an older queued run, while an active deployment is allowed to finish.
 concurrency:
   group: portfolio-production
   cancel-in-progress: false
@@ -17,13 +17,13 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  APP_DIR: /var/www/meeshlabs/supunbatagoda
+
 jobs:
   build-and-deploy:
-    name: Build frontend and deploy to VPS
+    name: Build and deploy Nuxt and NestJS
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - name: Check out repository
@@ -34,25 +34,74 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build application
+      - name: Verify Nuxt build
+        working-directory: frontend
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-        run: npm run build
+          NUXT_PUBLIC_API_BASE: ${{ secrets.NUXT_PUBLIC_API_BASE }}
+        run: |
+          npm ci
+          npm run build
 
-      # The web-server root should be /var/www/meeshlabs/supunbatagoda.
-      # `rm: true` avoids leaving stale hashed assets after a deployment.
-      - name: Deploy built site to VPS
+      - name: Verify NestJS build
+        working-directory: backend
+        run: |
+          npm ci
+          npm run prisma:generate
+          npm run build
+
+      # A release is built before `current` is changed, so the live app stays
+      # online if an upload or installation fails.
+      - name: Create release directory on VPS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          fingerprint: ${{ secrets.VPS_HOST_FINGERPRINT }}
+          script: mkdir -p "${{ env.APP_DIR }}/releases/${{ github.sha }}"
+
+      - name: Upload application source
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: frontend/dist/*
-          target: /var/www/meeshlabs/supunbatagoda
-          strip_components: 2
+          fingerprint: ${{ secrets.VPS_HOST_FINGERPRINT }}
+          source: frontend,backend,ecosystem.config.cjs
+          target: ${{ env.APP_DIR }}/releases/${{ github.sha }}
           rm: true
+          exclude: "**/node_modules/**,**/.env,**/.nuxt/**,**/.output/**,**/dist/**"
+
+      - name: Install, build, and switch release
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          fingerprint: ${{ secrets.VPS_HOST_FINGERPRINT }}
+          script: |
+            set -eu
+            APP_DIR="${{ env.APP_DIR }}"
+            RELEASE_DIR="$APP_DIR/releases/${{ github.sha }}"
+
+            test -f "$APP_DIR/shared/frontend.env"
+            test -f "$APP_DIR/shared/backend.env"
+            ln -sfn "$APP_DIR/shared/frontend.env" "$RELEASE_DIR/frontend/.env"
+            ln -sfn "$APP_DIR/shared/backend.env" "$RELEASE_DIR/backend/.env"
+
+            cd "$RELEASE_DIR/frontend"
+            npm ci
+            npm run build
+
+            cd "$RELEASE_DIR/backend"
+            npm ci
+            npm run prisma:generate
+            npm run build
+
+            ln -sfn "$RELEASE_DIR" "$APP_DIR/current"
+            pm2 startOrReload "$APP_DIR/current/ecosystem.config.cjs" --env production --update-env
+            pm2 save
