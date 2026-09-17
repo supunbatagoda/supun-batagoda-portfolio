@@ -1,0 +1,35 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt build",
+    "generate": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt generate",
+    "dev": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt dev",
+    "preview": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt preview",
+    "prepare": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt prepare",
+    "lint": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" eslint .",
+    "lint:fix": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" eslint . --fix"
+  },
+  "dependencies": {
+    "@nuxt/ui": "^4.11.1",
+    "@pinia/nuxt": "^1.0.2",
+    "pinia": "^4.0.3",
+    "tailwindcss": "^4.0.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
+    "@rolldown/binding-linux-x64-gnu": "^1.2.9",
+    "eslint": "^9.20.0",
+    "nuxt": "^4.5.2",
+    "oxc-parser": "^0.150.0",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.0.0"
+  }
+}

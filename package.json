@@ -1,0 +1,34 @@
+{
+  "name": "supun-batagoda-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fullstack portfolio boilerplate with Nuxt 4, Vue 3, Tailwind CSS, Nuxt UI, Pinia, NestJS, MySQL 8.4, Prisma, and Zod",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run start:dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "lint:backend": "npm --prefix backend run lint",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "format:backend": "npm --prefix backend run format",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f mysql",
+    "db:migrate": "npm --prefix backend run prisma:migrate",
+    "db:seed": "npm --prefix backend run prisma:seed"
+  },
+  "keywords": [
+    "nuxt4",
+    "vue3",
+    "pinia",
+    "nuxt-ui",
+    "tailwind",
+    "nestjs",
+    "prisma",
+    "mysql",
+    "zod"
+  ],
+  "author": "Supun Batagoda",
+  "license": "UNLICENSED"
+}
