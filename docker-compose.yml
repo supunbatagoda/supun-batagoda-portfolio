@@ -1,0 +1,34 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: portfolio_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: portfolio_db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      # Bound strictly to 127.0.0.1 for local development security
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "127.0.0.1",
+          "-u",
+          "root",
+          "-prootpassword",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
+    driver: local
