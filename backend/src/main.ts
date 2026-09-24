@@ -1,43 +1,32 @@
 import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
-import { ZodValidationPipe } from 'nestjs-zod';
+import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
-  // Set global API route prefix
-  app.setGlobalPrefix('api');
-
-  // Global Zod validation pipe
-  app.useGlobalPipes(new ZodValidationPipe());
-
-  // Configure CORS securely
-  const allowedOrigins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
-    : ['http://localhost:3000'];
+  app.use(helmet());
 
   app.enableCors({
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   });
 
-  // Enable graceful shutdown hooks
-  app.enableShutdownHooks();
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
-  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
-  // Security: explicitly listen on 127.0.0.1 rather than 0.0.0.0 in dev/testing
-  const host = '127.0.0.1';
+  app.setGlobalPrefix('api/v1');
 
-  await app.listen(port, host);
-  logger.log(`Backend NestJS application is running at: http://${host}:${port}/api`);
-  logger.log(`Health endpoint: http://${host}:${port}/api/health`);
-  logger.log(`Projects endpoint: http://${host}:${port}/api/projects`);
+  const port = process.env.BACKEND_PORT ?? 4000;
+  await app.listen(port);
+  // eslint-disable-next-line no-console
+  console.log(`Backend listening on http://localhost:${port}`);
 }
 
-bootstrap().catch((err) => {
-  console.error('Fatal error during NestJS bootstrap:', err);
-  process.exit(1);
-});
+bootstrap();
