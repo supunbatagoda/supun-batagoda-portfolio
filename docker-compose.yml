@@ -1,34 +1,69 @@
 services:
   mysql:
     image: mysql:8.4
-    container_name: portfolio_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: portfolio_db
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: apppassword
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      # Bound strictly to 127.0.0.1 for local development security
-      - "127.0.0.1:3306:3306"
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - portfolio_network
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "127.0.0.1",
-          "-u",
-          "root",
-          "-prootpassword",
-        ]
-      interval: 10s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - portfolio_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      BACKEND_PORT: ${BACKEND_PORT}
+    ports:
+      - "${BACKEND_PORT}:4000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - portfolio_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - portfolio_network
+
+networks:
+  portfolio_network:
+    driver: bridge
 
 volumes:
   mysql_data:
-    driver: local

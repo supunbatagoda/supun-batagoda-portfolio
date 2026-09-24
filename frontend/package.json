@@ -1,35 +1,27 @@
 {
   "name": "frontend",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "build": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt build",
-    "generate": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt generate",
-    "dev": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt dev",
-    "preview": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt preview",
-    "prepare": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" nuxt prepare",
-    "lint": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" eslint .",
-    "lint:fix": "NODE_OPTIONS=\"--experimental-require-module --require ./polyfill.cjs\" eslint . --fix"
+    "dev": "next dev --turbopack -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@nuxt/ui": "^4.11.1",
-    "@pinia/nuxt": "^1.0.2",
-    "pinia": "^4.0.3",
-    "tailwindcss": "^4.0.0",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^1.17.0",
-    "@rolldown/binding-linux-x64-gnu": "^1.2.9",
-    "eslint": "^9.20.0",
-    "nuxt": "^4.5.2",
-    "oxc-parser": "^0.150.0",
-    "prettier": "^3.5.1",
-    "typescript": "^5.7.3"
-  },
-  "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "^1.0.0"
+    "typescript": "^5.7.3",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "15.1.6",
+    "tailwindcss": "^3.4.17",
+    "postcss": "^8.4.49",
+    "autoprefixer": "^10.4.20"
   }
 }
