@@ -36,7 +36,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1' }}
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: Set up SSH
@@ -45,12 +45,15 @@ jobs:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_HOST_FINGERPRINT: ${{ secrets.VPS_HOST_FINGERPRINT }}
         run: |
+          if [ -z "$VPS_HOST" ] || [ -z "$VPS_SSH_KEY" ] || [ -z "$VPS_HOST_FINGERPRINT" ]; then
+            echo "VPS_HOST, VPS_SSH_KEY, and VPS_HOST_FINGERPRINT must be configured as repository secrets."
+            exit 1
+          fi
           install -m 700 -d ~/.ssh
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$VPS_HOST" > ~/.ssh/known_hosts
-          ACTUAL_FINGERPRINT=$(ssh-keygen -lf ~/.ssh/known_hosts -E sha256 | awk 'NR == 1 { print $2 }')
-          if [ "$ACTUAL_FINGERPRINT" != "$VPS_HOST_FINGERPRINT" ]; then
+          if ! ssh-keygen -lf ~/.ssh/known_hosts -E sha256 | awk '{ print $2 }' | grep -Fxq "$VPS_HOST_FINGERPRINT"; then
             echo "VPS host fingerprint did not match"
             exit 1
           fi
