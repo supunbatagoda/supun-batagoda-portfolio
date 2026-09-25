@@ -1,15 +1,19 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import helmet from 'helmet';
-import { AppModule } from './app.module';
+import { NestFactory } from "@nestjs/core";
+import { ValidationPipe } from "@nestjs/common";
+import helmet from "helmet";
+import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.use(helmet());
 
+  const frontendUrls = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(",").map((url) => url.trim())
+    : true;
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL,
+    origin: frontendUrls,
     credentials: true,
   });
 
@@ -21,7 +25,7 @@ async function bootstrap() {
     }),
   );
 
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix("api/v1");
 
   const port = process.env.BACKEND_PORT ?? 4000;
   await app.listen(port);

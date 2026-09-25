@@ -1,0 +1,99 @@
+name: Deploy backend to VPS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "docker-compose.prod.yml"
+      - ".github/workflows/backend-deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: backend-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DEPLOY_DIR: /var/www/meeshlabs/portfolio-backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST_FINGERPRINT: ${{ secrets.VPS_HOST_FINGERPRINT }}
+        run: |
+          if [ -z "$VPS_HOST" ] || [ -z "$VPS_SSH_KEY" ] || [ -z "$VPS_HOST_FINGERPRINT" ]; then
+            echo "VPS_HOST, VPS_SSH_KEY, and VPS_HOST_FINGERPRINT must be configured as repository secrets."
+            exit 1
+          fi
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$VPS_HOST" > ~/.ssh/known_hosts
+          if ! ssh-keygen -lf ~/.ssh/known_hosts -E sha256 | awk '{ print $2 }' | grep -Fxq "$VPS_HOST_FINGERPRINT"; then
+            echo "VPS host fingerprint did not match"
+            exit 1
+          fi
+
+      - name: Create deployment directory on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+        run: ssh "$VPS_USERNAME@$VPS_HOST" "mkdir -p '$DEPLOY_DIR'"
+
+      - name: Upload backend files to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+        run: |
+          rsync -az --delete \
+            --exclude 'node_modules' \
+            --exclude 'dist' \
+            backend/ "$VPS_USERNAME@$VPS_HOST:$DEPLOY_DIR/backend/"
+          rsync -az docker-compose.prod.yml "$VPS_USERNAME@$VPS_HOST:$DEPLOY_DIR/"
+
+      - name: Deploy with Docker Compose on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+        run: |
+          ssh "$VPS_USERNAME@$VPS_HOST" "
+            cd '$DEPLOY_DIR'
+            if [ ! -f .env ]; then
+              echo 'Generating initial .env configuration on VPS...'
+              cat << 'EOF' > .env
+          MYSQL_ROOT_PASSWORD=$(openssl rand -hex 16)
+          MYSQL_USER=portfolio_user
+          MYSQL_PASSWORD=$(openssl rand -hex 16)
+          DATABASE_URL=mysql://portfolio_user:\${MYSQL_PASSWORD}@mysql:3306/portfolio_db
+          BACKEND_PORT=4000
+          FRONTEND_URL=https://supunbatagoda.site,https://www.supunbatagoda.site
+          NODE_ENV=production
+          EOF
+              # Evaluate the random passwords into the final file
+              ROOT_PW=\$(openssl rand -hex 16)
+              APP_PW=\$(openssl rand -hex 16)
+              cat << EOF > .env
+          MYSQL_ROOT_PASSWORD=\$ROOT_PW
+          MYSQL_USER=portfolio_user
+          MYSQL_PASSWORD=\$APP_PW
+          DATABASE_URL=mysql://portfolio_user:\$APP_PW@mysql:3306/portfolio_db
+          BACKEND_PORT=4000
+          FRONTEND_URL=https://supunbatagoda.site,https://www.supunbatagoda.site
+          NODE_ENV=production
+          EOF
+            fi
+            docker compose -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-compose.prod.yml ps
+          "
