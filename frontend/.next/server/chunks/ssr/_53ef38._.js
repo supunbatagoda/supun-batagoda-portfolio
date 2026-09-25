@@ -108,7 +108,7 @@ var { r: __turbopack_require__, f: __turbopack_module_context__, i: __turbopack_
 __turbopack_esm__({
     "subscribe": (()=>subscribe)
 });
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+const API_URL = ("TURBOPACK compile-time value", "http://localhost:4000/api/v1") ?? "http://localhost:4000/api/v1";
 async function subscribe(email) {
     const response = await fetch(`${API_URL}/subscriptions`, {
         method: "POST",
