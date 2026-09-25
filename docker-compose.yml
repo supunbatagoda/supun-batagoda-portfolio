@@ -1,69 +1,72 @@
 services:
-  mysql:
-    image: mysql:8.4
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - portfolio_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
-
-  redis:
-    image: redis:alpine
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    networks:
-      - portfolio_network
-
+  # ── NestJS Backend ────────────────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: portfolio-backend
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
       FRONTEND_URL: ${FRONTEND_URL}
-      BACKEND_PORT: ${BACKEND_PORT}
-    ports:
-      - "${BACKEND_PORT}:4000"
+      BACKEND_PORT: 4000
+      NODE_ENV: production
+    expose:
+      - "4000"
     depends_on:
-      mysql:
-        condition: service_healthy
+      - db-check
     networks:
-      - portfolio_network
+      - meesh_labs_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=meesh_labs_net"
+      - "traefik.http.routers.portfolio-backend.rule=Host(`api.supunbatagoda.site.local`)"
+      - "traefik.http.routers.portfolio-backend.entrypoints=web"
+      - "traefik.http.services.portfolio-backend.loadbalancer.server.port=4000"
 
+  # ── Next.js Frontend ──────────────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    container_name: portfolio-frontend
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-    ports:
-      - "3000:3000"
+      NODE_ENV: production
+    expose:
+      - "3000"
     depends_on:
       - backend
     networks:
-      - portfolio_network
+      - meesh_labs_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=meesh_labs_net"
+      - "traefik.http.routers.portfolio-frontend.rule=Host(`supunbatagoda.site.local`)"
+      - "traefik.http.routers.portfolio-frontend.entrypoints=web"
+      - "traefik.http.services.portfolio-frontend.loadbalancer.server.port=3000"
+
+  # ── One-shot DB readiness check ───────────────────────────────────────────────
+  db-check:
+    image: mysql:8.4.10
+    container_name: portfolio-db-check
+    restart: "no"
+    networks:
+      - meesh_labs_net
+    entrypoint: >
+      sh -c "
+        echo 'Waiting for MySQL...';
+        until mysqladmin ping -h mysql-server -u root -p$$MYSQL_ROOT_PASSWORD --silent; do
+          sleep 2;
+        done;
+        echo 'MySQL is ready!';
+      "
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
 networks:
-  portfolio_network:
-    driver: bridge
-
-volumes:
-  mysql_data:
+  meesh_labs_net:
+    external: true

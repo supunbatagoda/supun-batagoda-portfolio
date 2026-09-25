@@ -1,5 +1,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
+# openssl required by Prisma generate to detect the correct binary target
+RUN apk add --no-cache openssl
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma
 RUN npm install
@@ -14,8 +16,10 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+# openssl required at runtime by Prisma's native query engine
+RUN apk add --no-cache openssl
 
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY package.json ./
