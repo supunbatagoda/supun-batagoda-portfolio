@@ -3,7 +3,7 @@ import SubscribeForm from "@/components/SubscribeForm";
 
 // Configurable launch date. Move to an env var later if it needs to change
 // without a redeploy.
-const LAUNCH_DATE = "2026-12-31T00:00:00+05:30";
+const LAUNCH_DATE = "2026-10-31T00:00:00+05:30";
 
 export default function ComingSoon() {
   return (
