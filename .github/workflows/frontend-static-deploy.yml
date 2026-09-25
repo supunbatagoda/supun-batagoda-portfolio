@@ -34,7 +34,7 @@ jobs:
       - name: Build static site
         working-directory: frontend
         env:
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1' }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://api.supunbatagoda.site/api/v1' }}
         run: |
           npm ci
           npm run build
