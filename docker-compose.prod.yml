@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      FRONTEND_URL: ${FRONTEND_URL}
+      FRONTEND_URL: ${FRONTEND_URL:-https://supunbatagoda.site,https://www.supunbatagoda.site}
       BACKEND_PORT: 4000
       NODE_ENV: production
     ports:
@@ -45,6 +45,24 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    networks:
+      - portfolio_prod_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.supunbatagoda.site/api/v1}
+    container_name: portfolio-prod-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.supunbatagoda.site/api/v1}
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - backend
     networks:
       - portfolio_prod_net
 
