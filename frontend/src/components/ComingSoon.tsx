@@ -14,7 +14,9 @@ export default function ComingSoon() {
           <span className="h-2.5 w-2.5 rounded-full bg-line" />
           <span className="h-2.5 w-2.5 rounded-full bg-line" />
           <span className="h-2.5 w-2.5 rounded-full bg-line" />
-          <span className="ml-3 font-mono text-xs text-muted">portfolio.sh</span>
+          <span className="ml-3 font-mono text-xs text-muted">
+            portfolio.sh
+          </span>
         </div>
 
         <div className="px-6 py-10 sm:px-10 sm:py-14 flex flex-col gap-8">
@@ -23,7 +25,7 @@ export default function ComingSoon() {
             <h1 className="mt-2 font-mono text-3xl sm:text-4xl font-medium text-paper tracking-tight">
               Supun Batagoda
             </h1>
-            <p className="mt-1 text-muted">Software Engineer</p>
+            <p className="mt-1 text-muted">FULL-STACK ENGINEER</p>
           </div>
 
           <p className="text-paper/90 leading-relaxed">
@@ -32,12 +34,16 @@ export default function ComingSoon() {
           </p>
 
           <div>
-            <p className="mb-3 font-mono text-xs text-muted">$ time-until-launch</p>
+            <p className="mb-3 font-mono text-xs text-muted">
+              $ time-until-launch
+            </p>
             <Countdown launchDate={LAUNCH_DATE} />
           </div>
 
           <div>
-            <p className="mb-3 font-mono text-xs text-muted">$ subscribe --email</p>
+            <p className="mb-3 font-mono text-xs text-muted">
+              $ subscribe --email
+            </p>
             <SubscribeForm />
           </div>
         </div>
