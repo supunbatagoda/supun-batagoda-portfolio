@@ -1,23 +1,19 @@
-name: Deploy backend to VPS
+name: Deploy to VPS (Docker)
 
 on:
   push:
     branches: [main]
-    paths:
-      - "backend/**"
-      - "docker-compose.prod.yml"
-      - ".github/workflows/backend-deploy.yml"
   workflow_dispatch:
 
 concurrency:
-  group: backend-production
+  group: production-deploy
   cancel-in-progress: false
 
 permissions:
   contents: read
 
 env:
-  DEPLOY_DIR: /var/www/meeshlabs/portfolio-backend
+  DEPLOY_DIR: /var/www/meeshlabs/supunbatagoda
 
 jobs:
   deploy:
@@ -52,7 +48,7 @@ jobs:
           VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
         run: ssh "$VPS_USERNAME@$VPS_HOST" "mkdir -p '$DEPLOY_DIR'"
 
-      - name: Upload backend files to VPS
+      - name: Upload project files to VPS
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
@@ -61,6 +57,13 @@ jobs:
             --exclude 'node_modules' \
             --exclude 'dist' \
             backend/ "$VPS_USERNAME@$VPS_HOST:$DEPLOY_DIR/backend/"
+
+          rsync -az --delete \
+            --exclude 'node_modules' \
+            --exclude '.next' \
+            --exclude 'out' \
+            frontend/ "$VPS_USERNAME@$VPS_HOST:$DEPLOY_DIR/frontend/"
+
           rsync -az docker-compose.prod.yml "$VPS_USERNAME@$VPS_HOST:$DEPLOY_DIR/"
 
       - name: Deploy with Docker Compose on VPS
@@ -70,18 +73,13 @@ jobs:
         run: |
           ssh "$VPS_USERNAME@$VPS_HOST" "
             cd '$DEPLOY_DIR'
+            
+            # Remove legacy loose static export files if they exist
+            rm -rf _next 404.html index.html index.txt
+
+            # Generate .env if not present
             if [ ! -f .env ]; then
               echo 'Generating initial .env configuration on VPS...'
-              cat << 'EOF' > .env
-          MYSQL_ROOT_PASSWORD=$(openssl rand -hex 16)
-          MYSQL_USER=portfolio_user
-          MYSQL_PASSWORD=$(openssl rand -hex 16)
-          DATABASE_URL=mysql://portfolio_user:\${MYSQL_PASSWORD}@mysql:3306/portfolio_db
-          BACKEND_PORT=4000
-          FRONTEND_URL=https://supunbatagoda.site,https://www.supunbatagoda.site
-          NODE_ENV=production
-          EOF
-              # Evaluate the random passwords into the final file
               ROOT_PW=\$(openssl rand -hex 16)
               APP_PW=\$(openssl rand -hex 16)
               cat << EOF > .env
@@ -91,9 +89,12 @@ jobs:
           DATABASE_URL=mysql://portfolio_user:\$APP_PW@mysql:3306/portfolio_db
           BACKEND_PORT=4000
           FRONTEND_URL=https://supunbatagoda.site,https://www.supunbatagoda.site
+          NEXT_PUBLIC_API_URL=https://api.supunbatagoda.site/api/v1
           NODE_ENV=production
           EOF
             fi
+
+            # Build and run containers (mysql, backend, frontend)
             docker compose -f docker-compose.prod.yml up -d --build
             docker compose -f docker-compose.prod.yml ps
           "
