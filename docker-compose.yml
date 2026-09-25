@@ -49,7 +49,7 @@ services:
       - "traefik.http.routers.portfolio-frontend.entrypoints=web"
       - "traefik.http.services.portfolio-frontend.loadbalancer.server.port=3000"
 
-  # ── One-shot DB readiness check ───────────────────────────────────────────────
+  # ── DB readiness check ───────────────────────────────────────────────
   db-check:
     image: mysql:8.4.10
     container_name: portfolio-db-check
