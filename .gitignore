@@ -5,10 +5,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Nuxt output & cache
-.nuxt/
-.output/
-dist/
+# Next output & cache
+frontend/.next/
+frontend/.out/
+frontend/dist/
 
 # NestJS build output
 backend/dist/
