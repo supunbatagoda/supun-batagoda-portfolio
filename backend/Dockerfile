@@ -1,3 +1,14 @@
+# ---- dev ----
+FROM node:20-alpine AS dev
+WORKDIR /app
+RUN apk add --no-cache openssl
+COPY package.json package-lock.json* ./
+COPY prisma ./prisma
+RUN npm install
+RUN npx prisma generate
+COPY . .
+CMD ["npm", "run", "start:dev"]
+
 FROM node:20-alpine AS deps
 WORKDIR /app
 # openssl required by Prisma generate to detect the correct binary target
