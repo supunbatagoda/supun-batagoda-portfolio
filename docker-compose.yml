@@ -5,6 +5,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: portfolio-backend
+    ports:
+      - "127.0.0.1:3309:3306"
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
