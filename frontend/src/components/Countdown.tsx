@@ -36,21 +36,42 @@ const UNITS: { key: keyof TimeLeft; label: string }[] = [
 
 export default function Countdown({ launchDate }: CountdownProps) {
   const target = new Date(launchDate).getTime();
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(() => getTimeLeft(target));
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(getTimeLeft(target));
-    }, 1000);
-
+    setMounted(true);
+    setTimeLeft(getTimeLeft(target));
+    const interval = setInterval(() => setTimeLeft(getTimeLeft(target)), 1000);
     return () => clearInterval(interval);
   }, [target]);
 
-  if (!timeLeft) {
+  if (!mounted) {
     return (
-      <p className="font-mono text-sm tracking-tight text-signal">Coming Soon</p>
+      <div
+        className="flex gap-4 sm:gap-6"
+        role="timer"
+        aria-live="polite"
+        aria-label="Time remaining until launch"
+      >
+        {UNITS.map(({ key, label }) => (
+          <div key={key} className="flex flex-col items-center">
+            <span className="font-mono text-2xl sm:text-3xl text-paper tabular-nums">
+              --
+            </span>
+            <span className="mt-1 text-[11px] text-muted">{label}</span>
+          </div>
+        ))}
+      </div>
     );
   }
+
+  if (!timeLeft)
+    return (
+      <p className="font-mono text-sm tracking-tight text-signal">
+        Coming Soon
+      </p>
+    );
 
   return (
     <div

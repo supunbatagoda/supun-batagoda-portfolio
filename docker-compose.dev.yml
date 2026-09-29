@@ -1,0 +1,79 @@
+services:
+  # ── NestJS Backend ────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: dev
+    container_name: portfolio-backend-dev
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      BACKEND_PORT: 4000
+      NODE_ENV: development
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db-check
+    networks:
+      - meesh_labs_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=meesh_labs_net"
+      - "traefik.http.routers.portfolio-backend.rule=Host(`api.supunbatagoda.site.local`)"
+      - "traefik.http.routers.portfolio-backend.entrypoints=web"
+      - "traefik.http.services.portfolio-backend.loadbalancer.server.port=4000"
+
+  # ── Next.js Frontend ──────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    container_name: portfolio-frontend-dev
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NODE_ENV: development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - meesh_labs_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=meesh_labs_net"
+      - "traefik.http.routers.portfolio-frontend.rule=Host(`supunbatagoda.site.local`)"
+      - "traefik.http.routers.portfolio-frontend.entrypoints=web"
+      - "traefik.http.services.portfolio-frontend.loadbalancer.server.port=3000"
+
+  # ── DB readiness check ───────────────────────────────────────────────
+  db-check:
+    image: mysql:8.4.10
+    container_name: portfolio-db-check-dev
+    restart: "no"
+    networks:
+      - meesh_labs_net
+    entrypoint: >
+      sh -c "
+        echo 'Waiting for MySQL...';
+        until mysqladmin ping -h mysql-server -u root -p$$MYSQL_ROOT_PASSWORD --silent; do
+          sleep 2;
+        done;
+        echo 'MySQL is ready!';
+      "
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+networks:
+  meesh_labs_net:
+    external: true

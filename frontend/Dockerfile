@@ -1,3 +1,13 @@
+# ---- dev ----
+FROM node:20-alpine AS dev
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install
+COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
 # ---- deps ----
 FROM node:20-alpine AS deps
 WORKDIR /app
