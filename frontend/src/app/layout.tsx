@@ -15,9 +15,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Supun Batagoda — Software Engineer",
+  title: "Supun Batagoda — Senior Full-Stack Engineer & Technical Lead",
   description:
-    "Portfolio of Supun Batagoda, Software Engineer. Launching soon — get notified.",
+    "Portfolio of Supun Batagoda. Senior full-stack engineer and technical lead specializing in high-volume platforms, backend architecture, and modern web applications.",
 };
 
 export default function RootLayout({
