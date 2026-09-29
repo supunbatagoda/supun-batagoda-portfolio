@@ -1,3 +1,5 @@
+import Image from "next/image";
+import portrait from "@/assets/img/supun_batagoda.png";
 import Button from "@/components/atoms/Button";
 import MonoGlyph from "@/components/atoms/MonoGlyph";
 import StatusBadge from "@/components/atoms/StatusBadge";
@@ -54,9 +56,15 @@ function About() {
           </div>
         </div>
         <div className="relative">
-          <div className="flex aspect-[4/5] items-center justify-center rounded-2xl border border-paper/10 bg-surface font-mono text-xs text-muted">
-            {/* swap for <Image src="/portrait.jpg" alt="Portrait of Supun Batagoda" fill className="object-cover" /> */}
-            your_photo.jpg
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-paper/10 bg-surface">
+            <Image
+              src={portrait}
+              alt="Portrait of Supun Batagoda"
+              fill
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+            />
           </div>
           <div className="absolute -bottom-3.5 -right-3.5 rounded-[10px] bg-signal px-3.5 py-2.5 font-mono text-xs font-semibold text-ink shadow-[0_10px_30px_rgba(242,169,59,0.3)]">
             &lt;/&gt; since {PROFILE.since}
