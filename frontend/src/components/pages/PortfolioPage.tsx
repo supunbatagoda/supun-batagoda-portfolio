@@ -22,6 +22,7 @@ import { PROJECTS } from "@/data/projects";
 const dot = <span className="text-signal">.</span>;
 const socials = [
   { label: "LinkedIn", href: PROFILE.linkedin },
+  { label: "GitHub", href: PROFILE.github },
   { label: "Email", href: `mailto:${PROFILE.email}` },
 ];
 
@@ -87,6 +88,10 @@ function Contact() {
           <div className="flex flex-col gap-4 text-[15px]">
             <ExternalLink href={`mailto:${PROFILE.email}`} className="flex items-center gap-3"><MonoGlyph className="text-[13px]">✉</MonoGlyph>{PROFILE.email}</ExternalLink>
             <ExternalLink href={PROFILE.phoneHref} className="flex items-center gap-3"><MonoGlyph className="text-[13px]">☎</MonoGlyph>{PROFILE.phone}</ExternalLink>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Button href={PROFILE.github} variant="outline" className="rounded-xl px-7 py-4 font-mono text-base">GitHub ↗</Button>
+              <Button href={PROFILE.linkedin} variant="outline" className="rounded-xl px-7 py-4 font-mono text-base">LinkedIn ↗</Button>
+            </div>
           </div>
         </div>
         <ContactForm />
