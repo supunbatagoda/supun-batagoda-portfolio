@@ -1,3 +1,5 @@
+import Image from "next/image";
+import opuspayImage from "@/assets/img/opuspay.png";
 import Button from "@/components/atoms/Button";
 import Chip from "@/components/atoms/Chip";
 import MonoGlyph from "@/components/atoms/MonoGlyph";
@@ -20,11 +22,15 @@ export default function ProjectCard({ project }: { project: Project }) {
           </div>
           <Button href={project.href} className="px-[18px] py-2.5">Visit live ↗</Button>
         </div>
-        <div className="flex min-h-[260px] items-center justify-center border-t border-line bg-[repeating-linear-gradient(135deg,rgba(242,169,59,0.06)_0,rgba(242,169,59,0.06)_14px,transparent_14px,transparent_28px)] md:border-l md:border-t-0">
-          <div className="text-center font-mono text-xs text-muted">
-            <MonoGlyph className="mb-2 block text-[26px] opacity-55">◳</MonoGlyph>
-            project_shot.png
-          </div>
+        <div className="relative min-h-[260px] overflow-hidden border-t border-line bg-[repeating-linear-gradient(135deg,rgba(242,169,59,0.06)_0,rgba(242,169,59,0.06)_14px,transparent_14px,transparent_28px)] md:border-l md:border-t-0">
+          <Image
+            src={opuspayImage}
+            alt="OpusPay project screenshot"
+            fill
+            unoptimized
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover"
+          />
         </div>
       </div>
     );
