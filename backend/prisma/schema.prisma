@@ -15,3 +15,13 @@ model Subscription {
 
   @@map("subscriptions")
 }
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(255)
+  email     String   @db.VarChar(255)
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("contacts")
+}

@@ -13,6 +13,8 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       BACKEND_PORT: 4000
       NODE_ENV: production
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
     expose:
       - "4000"
     depends_on:
