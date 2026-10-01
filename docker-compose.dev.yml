@@ -11,6 +11,8 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       BACKEND_PORT: 4000
       NODE_ENV: development
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
     volumes:
       - ./backend:/app
       - /app/node_modules
