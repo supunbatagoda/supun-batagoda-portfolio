@@ -52,7 +52,6 @@ future caching, rate limiting, and background jobs.
 ```bash
 cp .env.example .env
 docker compose up --build
-
 ```
 
 Then:
