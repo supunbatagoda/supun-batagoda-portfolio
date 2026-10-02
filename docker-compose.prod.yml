@@ -4,14 +4,17 @@ services:
     container_name: portfolio-prod-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: portfolio_db
       MYSQL_USER: ${MYSQL_USER:-appuser}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-root}
     volumes:
       - mysql_prod_data:/var/lib/mysql
     networks:
-      - portfolio_prod_net
+      portfolio_prod_net:
+        aliases:
+          - mysql-server
+          - mysql
     healthcheck:
       test:
         [
@@ -22,7 +25,7 @@ services:
           "localhost",
           "-u",
           "root",
-          "-p${MYSQL_ROOT_PASSWORD}",
+          "-p${MYSQL_ROOT_PASSWORD:-root}",
         ]
       interval: 5s
       timeout: 5s
@@ -36,7 +39,7 @@ services:
     container_name: portfolio-prod-backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: ${DATABASE_URL:-mysql://root:${MYSQL_ROOT_PASSWORD:-root}@mysql:3306/portfolio_db}
       FRONTEND_URL: ${FRONTEND_URL:-https://supunbatagoda.site,https://www.supunbatagoda.site}
       BACKEND_PORT: 4000
       NODE_ENV: production
