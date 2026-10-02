@@ -2,7 +2,7 @@ name: Deploy to VPS (Docker)
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/site]
   workflow_dispatch:
 
 concurrency:
