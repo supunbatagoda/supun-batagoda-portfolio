@@ -1,5 +1,6 @@
 import LogoMark from "@/components/atoms/LogoMark";
 import Button from "@/components/atoms/Button";
+import { ThemeToggle } from "@/components/molecules/ThemeToggle";
 import { NAV_ITEMS } from "@/data/navigation";
 import { PROFILE } from "@/data/profile";
 
@@ -19,7 +20,10 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <Button href="#contact" className="px-3.5 py-2 font-mono text-xs">let&apos;s talk →</Button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Button href="#contact" className="px-3.5 py-2 font-mono text-xs">let&apos;s talk →</Button>
+          </div>
         </div>
       </div>
     </nav>
