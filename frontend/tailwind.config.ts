@@ -2,15 +2,16 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        ink: "#0B1220",
-        surface: "#121B2E",
-        line: "#24304A",
-        paper: "#E6E8EC",
-        muted: "#8B93A7",
-        signal: "#F2A93B",
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        line: "rgb(var(--color-line) / <alpha-value>)",
+        paper: "rgb(var(--color-paper) / <alpha-value>)",
+        muted: "rgb(var(--color-muted) / <alpha-value>)",
+        signal: "rgb(var(--color-signal) / <alpha-value>)",
       },
       fontFamily: {
         mono: [

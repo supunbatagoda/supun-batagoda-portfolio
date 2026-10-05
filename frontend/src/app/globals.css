@@ -2,18 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Light Mode Semantic Colors */
+    --color-ink: 248 250 252; /* bg-slate-50 */
+    --color-surface: 241 245 249; /* bg-slate-100 */
+    --color-line: 226 232 240; /* border-slate-200 */
+    --color-paper: 15 23 42; /* text-slate-900 */
+    --color-muted: 100 116 139; /* text-slate-500 */
+    --color-signal: 249 115 22; /* text-orange-500 */
+  }
+
+  .dark {
+    /* Dark Mode Original Colors */
+    --color-ink: 11 18 32; /* #0B1220 */
+    --color-surface: 18 27 46; /* #121B2E */
+    --color-line: 36 48 74; /* #24304A */
+    --color-paper: 230 232 236; /* #E6E8EC */
+    --color-muted: 139 147 167; /* #8B93A7 */
+    --color-signal: 242 169 59; /* #F2A93B */
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: #0b1220;
-  color: #e6e8ec;
+  background-color: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 
 ::selection {
-  background-color: #f2a93b;
-  color: #0b1220;
+  background-color: rgb(var(--color-signal));
+  color: rgb(var(--color-ink));
 }
 
 /* Respect reduced-motion preferences */
